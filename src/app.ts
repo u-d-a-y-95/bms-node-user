@@ -7,6 +7,7 @@ import {
   responseMiddleware,
 } from "@/lib/middlewares/response.middleware";
 import { NotFoundError } from "./lib/error";
+import { CONFIG } from "./config";
 
 export const app = express();
 
@@ -15,7 +16,12 @@ app.use(cookieParser());
 app.use(responseMiddleware);
 app.use(routes);
 app.get("/health", (_req: Request, res: Response, _next: NextFunction) => {
-  return res.success({ data: "ok" });
+  return res.success({
+    data: {
+      name: CONFIG.SERVICE_NAME,
+      statue: "OK",
+    },
+  });
 });
 
 app.use((_req: Request, res: Response) => res.error(new NotFoundError()));

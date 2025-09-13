@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { logger } from "../logger";
+import { HttpError } from "../error";
 export interface SuccessResponseOption<T> {
   data: T;
   message?: string;
@@ -34,17 +35,14 @@ export const responseMiddleware = (
   };
 
   res.error = function (options: ErrorResponseOption) {
-    const {
-      error,
-      message = "Failed",
-      status = 500,
-      success = false,
-    } = options;
+    const { error, message = "Failed", status, success = false } = options;
+    let httpStatus = 500;
+    if (error instanceof HttpError) httpStatus = error.status;
+    if (status) httpStatus = status;
 
-    logger.error({ success, status, message, error });
-    res.status(status).json({
+    res.status(httpStatus).json({
       success,
-      status,
+      status: httpStatus,
       message,
       data: null,
       error,

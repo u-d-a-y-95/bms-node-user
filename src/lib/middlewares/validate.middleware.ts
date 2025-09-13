@@ -5,7 +5,7 @@ import { Request, Response, NextFunction } from "express";
 export function validate<T extends object>(dtoClass: ClassConstructor<T>) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const dto = plainToInstance(dtoClass, req.body);
-    const errors: ValidationError[] = await classValidate(dto);
+    const errors: ValidationError[] = await classValidate(dto, {});
 
     if (errors.length > 0) {
       const formattedErrors = errors.reduce(
@@ -26,6 +26,34 @@ export function validate<T extends object>(dtoClass: ClassConstructor<T>) {
       });
     } else {
       req.body = dto;
+      next();
+    }
+  };
+}
+
+export function validateQuery<T extends object>(dtoClass: ClassConstructor<T>) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const dto = plainToInstance(dtoClass, req.query);
+    const errors: ValidationError[] = await classValidate(dto);
+    if (errors.length > 0) {
+      const formattedErrors = errors.reduce(
+        (acc, error) => {
+          acc[error.property] = Object.values(error.constraints || {});
+          return acc;
+        },
+        {} as Record<string, string[]>,
+      );
+
+      return res.error({
+        status: 400,
+        message: "Validation Error",
+        error: {
+          code: "BAD_REQUEST",
+          details: formattedErrors,
+        },
+      });
+    } else {
+      req.validatedQuery = dto;
       next();
     }
   };

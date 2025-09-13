@@ -7,6 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       user: { id: string };
+      validatedQuery?: unknown;
     }
     interface Response {
       success<T>(options: SuccessResponseOption<T>): void | Promise<void>;

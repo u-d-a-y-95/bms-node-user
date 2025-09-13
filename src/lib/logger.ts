@@ -2,7 +2,7 @@ import * as winston from "winston";
 import { CONFIG } from "../config";
 
 export const logger = winston.createLogger({
-  level: "info",
+  level: "debug",
   defaultMeta: { service: CONFIG.SERVICE_NAME },
   format: winston.format.combine(
     winston.format.timestamp(),
